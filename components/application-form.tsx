@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
+import { X } from "@phosphor-icons/react";
 import type { Application, ApplicationFormData, ApplicationStatus } from "@/lib/types";
 
 const STATUS_OPTIONS: { value: ApplicationStatus; label: string }[] = [
@@ -54,10 +56,9 @@ export function ApplicationForm({ application, onClose }: ApplicationFormProps) 
         .update({ ...payload, updated_at: new Date().toISOString() })
         .eq("id", application.id);
     } else {
-      // Get the current user's ID for RLS policy compliance
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        setError("You must be logged in to add an application.");
+        setError("You must be logged in.");
         setLoading(false);
         return;
       }
@@ -76,132 +77,161 @@ export function ApplicationForm({ application, onClose }: ApplicationFormProps) 
     }
   }
 
+  const inputStyles = {
+    background: "rgb(var(--color-surface))",
+    borderColor: "rgb(var(--color-outline))",
+    color: "rgb(var(--color-on-surface))",
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="px-6 py-4 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-900">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0"
+        style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
+        onClick={onClose}
+      />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.92, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.92, y: 20 }}
+        transition={{ type: "spring", stiffness: 400, damping: 28 }}
+        className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-[var(--radius-xl)] border"
+        style={{
+          background: "rgb(var(--color-surface-container))",
+          borderColor: "rgb(var(--color-outline-variant))",
+          boxShadow: "var(--shadow-elevation-3)",
+        }}
+      >
+        <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: "rgb(var(--color-outline-variant))" }}>
+          <h2 className="text-lg font-semibold" style={{ color: "rgb(var(--color-on-surface))" }}>
             {application ? "Edit Application" : "Add Application"}
           </h2>
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={onClose}
+            className="p-1.5 rounded-[var(--radius-full)]"
+            style={{ color: "rgb(var(--color-on-surface-variant))" }}
+          >
+            <X size={20} weight="bold" />
+          </motion.button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-sm px-4 py-3 rounded-[var(--radius-md)]"
+              style={{ background: "rgb(var(--color-error) / 0.1)", color: "rgb(var(--color-error))" }}
+            >
               {error}
-            </div>
+            </motion.div>
           )}
 
           <div>
-            <label htmlFor="company" className="block text-sm font-medium text-slate-700 mb-1">
-              Company *
-            </label>
+            <label className="block text-sm font-medium mb-1.5" style={{ color: "rgb(var(--color-on-surface))" }}>Company *</label>
             <input
-              id="company"
               type="text"
               required
               value={formData.company}
               onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"
+              className="w-full px-4 py-2.5 border rounded-[var(--radius-md)] text-sm transition-all duration-200 focus:ring-2 focus:ring-[rgb(var(--color-primary))] focus:border-transparent outline-none"
+              style={inputStyles}
               placeholder="e.g. Acme Corp"
             />
           </div>
 
           <div>
-            <label htmlFor="role" className="block text-sm font-medium text-slate-700 mb-1">
-              Role *
-            </label>
+            <label className="block text-sm font-medium mb-1.5" style={{ color: "rgb(var(--color-on-surface))" }}>Role *</label>
             <input
-              id="role"
               type="text"
               required
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"
+              className="w-full px-4 py-2.5 border rounded-[var(--radius-md)] text-sm transition-all duration-200 focus:ring-2 focus:ring-[rgb(var(--color-primary))] focus:border-transparent outline-none"
+              style={inputStyles}
               placeholder="e.g. Senior Frontend Engineer"
             />
           </div>
 
           <div>
-            <label htmlFor="url" className="block text-sm font-medium text-slate-700 mb-1">
-              Job URL
-            </label>
+            <label className="block text-sm font-medium mb-1.5" style={{ color: "rgb(var(--color-on-surface))" }}>Job URL</label>
             <input
-              id="url"
               type="url"
               value={formData.url}
               onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"
+              className="w-full px-4 py-2.5 border rounded-[var(--radius-md)] text-sm transition-all duration-200 focus:ring-2 focus:ring-[rgb(var(--color-primary))] focus:border-transparent outline-none"
+              style={inputStyles}
               placeholder="https://..."
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="status" className="block text-sm font-medium text-slate-700 mb-1">
-                Status
-              </label>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: "rgb(var(--color-on-surface))" }}>Status</label>
               <select
-                id="status"
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value as ApplicationStatus })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"
+                className="w-full px-4 py-2.5 border rounded-[var(--radius-md)] text-sm transition-all duration-200 focus:ring-2 focus:ring-[rgb(var(--color-primary))] focus:border-transparent outline-none"
+                style={inputStyles}
               >
                 {STATUS_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
             </div>
-
             <div>
-              <label htmlFor="applied_date" className="block text-sm font-medium text-slate-700 mb-1">
-                Date Applied
-              </label>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: "rgb(var(--color-on-surface))" }}>Date Applied</label>
               <input
-                id="applied_date"
                 type="date"
                 value={formData.applied_date}
                 onChange={(e) => setFormData({ ...formData, applied_date: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"
+                className="w-full px-4 py-2.5 border rounded-[var(--radius-md)] text-sm transition-all duration-200 focus:ring-2 focus:ring-[rgb(var(--color-primary))] focus:border-transparent outline-none"
+                style={inputStyles}
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-slate-700 mb-1">
-              Notes
-            </label>
+            <label className="block text-sm font-medium mb-1.5" style={{ color: "rgb(var(--color-on-surface))" }}>Notes</label>
             <textarea
-              id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent resize-none"
-              placeholder="Any notes about this application..."
+              className="w-full px-4 py-2.5 border rounded-[var(--radius-md)] text-sm transition-all duration-200 focus:ring-2 focus:ring-[rgb(var(--color-primary))] focus:border-transparent outline-none resize-none"
+              style={inputStyles}
+              placeholder="Any notes..."
             />
           </div>
 
-          <div className="flex gap-3 pt-2">
-            <button
+          <div className="flex gap-3 pt-3">
+            <motion.button
               type="button"
+              whileTap={{ scale: 0.96 }}
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+              className="flex-1 px-4 py-2.5 border rounded-[var(--radius-full)] font-medium text-sm transition-all duration-200"
+              style={{ borderColor: "rgb(var(--color-outline))", color: "rgb(var(--color-on-surface))" }}
             >
               Cancel
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               type="submit"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
               disabled={loading}
-              className="flex-1 px-4 py-2.5 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 rounded-[var(--radius-full)] font-medium text-sm transition-all duration-200 disabled:opacity-50"
+              style={{ background: "rgb(var(--color-primary))", color: "rgb(var(--color-on-primary))" }}
             >
               {loading ? "Saving..." : application ? "Update" : "Add"}
-            </button>
+            </motion.button>
           </div>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 }

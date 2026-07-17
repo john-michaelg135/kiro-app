@@ -1,19 +1,22 @@
 export default function DashboardLoading() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-pulse">
       <div className="flex justify-between items-center mb-6">
-        <div className="h-8 w-40 bg-slate-200 rounded-lg animate-pulse" />
-        <div className="h-10 w-36 bg-slate-200 rounded-lg animate-pulse" />
+        <div>
+          <div className="h-7 w-40 rounded-lg" style={{ background: "rgb(var(--color-surface-container-high))" }} />
+          <div className="h-4 w-24 mt-2 rounded-lg" style={{ background: "rgb(var(--color-surface-container-high))" }} />
+        </div>
+        <div className="h-10 w-36 rounded-full" style={{ background: "rgb(var(--color-surface-container-high))" }} />
       </div>
       <div className="flex gap-2 mb-6">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-8 w-24 bg-slate-200 rounded-lg animate-pulse" />
+          <div key={i} className="h-8 w-20 rounded-full" style={{ background: "rgb(var(--color-surface-container-high))" }} />
         ))}
       </div>
-      {[...Array(3)].map((_, i) => (
-        <div key={i} className="bg-white rounded-xl border border-slate-200 p-5">
-          <div className="h-5 w-48 bg-slate-200 rounded animate-pulse mb-2" />
-          <div className="h-4 w-64 bg-slate-100 rounded animate-pulse" />
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="p-5 rounded-[var(--radius-xl)] border" style={{ background: "rgb(var(--color-surface-container))", borderColor: "rgb(var(--color-outline-variant))" }}>
+          <div className="h-5 w-48 rounded-lg mb-2" style={{ background: "rgb(var(--color-surface-container-high))" }} />
+          <div className="h-4 w-64 rounded-lg" style={{ background: "rgb(var(--color-surface-container-high))" }} />
         </div>
       ))}
     </div>
