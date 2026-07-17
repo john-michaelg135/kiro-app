@@ -13,7 +13,16 @@ interface ThemeContextValue {
   toggleTheme: () => void;
 }
 
-const ThemeContext = createContext<ThemeContextValue | null>(null);
+// Provide a safe default so useTheme never throws
+const defaultContext: ThemeContextValue = {
+  theme: "light",
+  accent: "indigo",
+  setTheme: () => {},
+  setAccent: () => {},
+  toggleTheme: () => {},
+};
+
+const ThemeContext = createContext<ThemeContextValue>(defaultContext);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
@@ -42,10 +51,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   function setAccent(a: Accent) { setAccentState(a); }
   function toggleTheme() { setThemeState((prev) => (prev === "light" ? "dark" : "light")); }
 
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
   return (
     <ThemeContext.Provider value={{ theme, accent, setTheme, setAccent, toggleTheme }}>
       {children}
@@ -54,7 +59,5 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useTheme() {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error("useTheme must be used inside ThemeProvider");
-  return ctx;
+  return useContext(ThemeContext);
 }

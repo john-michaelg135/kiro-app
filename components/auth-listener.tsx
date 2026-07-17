@@ -1,17 +1,16 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 /**
- * This component listens for Supabase auth state changes.
- * When Supabase's default email confirmation flow redirects back with
- * an access_token in the URL hash fragment, the Supabase client picks it up
- * and fires an auth state change. This component handles the redirect.
+ * Listens for Supabase auth state changes (email confirmation hash fragment).
+ * Only redirects to /dashboard if the user is NOT already there.
  */
 export function AuthListener() {
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const supabase = createClient();
@@ -19,7 +18,7 @@ export function AuthListener() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") {
+      if (event === "SIGNED_IN" && !pathname.startsWith("/dashboard")) {
         router.push("/dashboard");
         router.refresh();
       }
@@ -28,7 +27,7 @@ export function AuthListener() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [router]);
+  }, [router, pathname]);
 
   return null;
 }
