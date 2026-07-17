@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { motion, useMotionValue, useSpring } from "motion/react";
 
 /**
@@ -12,7 +12,6 @@ export function BackgroundOrbs() {
       className="fixed inset-0 overflow-hidden pointer-events-none"
       style={{ zIndex: -1 }}
     >
-      {/* Orb 1 - Large, slow drift top-left */}
       <motion.div
         animate={{
           x: [0, 80, -60, 40, 0],
@@ -31,8 +30,6 @@ export function BackgroundOrbs() {
           willChange: "transform",
         }}
       />
-
-      {/* Orb 2 - Medium, right side */}
       <motion.div
         animate={{
           x: [0, -50, 70, -30, 0],
@@ -51,8 +48,6 @@ export function BackgroundOrbs() {
           willChange: "transform",
         }}
       />
-
-      {/* Orb 3 - Bottom left */}
       <motion.div
         animate={{
           x: [0, 40, -30, 60, 0],
@@ -71,8 +66,6 @@ export function BackgroundOrbs() {
           willChange: "transform",
         }}
       />
-
-      {/* Orb 4 - Center large ambient */}
       <motion.div
         animate={{
           x: [0, -70, 50, -40, 0],
@@ -96,88 +89,146 @@ export function BackgroundOrbs() {
 }
 
 /**
- * A soft glowing circle that follows the cursor with spring physics.
+ * Morphing cursor blob that warps to the shape of hovered elements.
+ * When hovering interactive elements or containers with [data-cursor-morph],
+ * it expands to match their bounding box and border-radius.
  */
 export function CursorGlow() {
+  const blobRef = useRef<HTMLDivElement>(null);
+
+  // Position (center of blob)
   const mouseX = useMotionValue(-200);
   const mouseY = useMotionValue(-200);
+  const springX = useSpring(mouseX, { stiffness: 200, damping: 22, mass: 0.4 });
+  const springY = useSpring(mouseY, { stiffness: 200, damping: 22, mass: 0.4 });
 
-  const springX = useSpring(mouseX, { stiffness: 120, damping: 18, mass: 0.5 });
-  const springY = useSpring(mouseY, { stiffness: 120, damping: 18, mass: 0.5 });
+  // Size (morphing)
+  const width = useMotionValue(40);
+  const height = useMotionValue(40);
+  const springW = useSpring(width, { stiffness: 300, damping: 25 });
+  const springH = useSpring(height, { stiffness: 300, damping: 25 });
 
-  const visible = useRef(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  // Border radius
+  const radius = useMotionValue(9999);
+  const springRadius = useSpring(radius, { stiffness: 300, damping: 25 });
+
+  // Opacity
+  const opacity = useMotionValue(0);
+  const springOpacity = useSpring(opacity, { stiffness: 300, damping: 30 });
+
+  const currentTarget = useRef<Element | null>(null);
+
+  const getMorphTarget = useCallback((el: Element | null): Element | null => {
+    while (el) {
+      if (el instanceof HTMLElement) {
+        // Elements that trigger morph: buttons, links, inputs, or anything with data-cursor-morph
+        if (
+          el.hasAttribute("data-cursor-morph") ||
+          el.tagName === "BUTTON" ||
+          el.tagName === "A" ||
+          el.tagName === "INPUT" ||
+          el.tagName === "SELECT" ||
+          el.tagName === "TEXTAREA" ||
+          el.getAttribute("role") === "button"
+        ) {
+          return el;
+        }
+      }
+      el = el.parentElement;
+    }
+    return null;
+  }, []);
 
   useEffect(() => {
     const hasFinePointer = window.matchMedia("(pointer: fine)").matches;
     if (!hasFinePointer) {
-      if (containerRef.current) containerRef.current.style.display = "none";
+      if (blobRef.current) blobRef.current.style.display = "none";
       return;
     }
 
+    let rafId: number | undefined;
+
     function handleMouseMove(e: MouseEvent) {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-      if (!visible.current && containerRef.current) {
-        containerRef.current.style.opacity = "1";
-        visible.current = true;
+      const target = getMorphTarget(e.target as Element);
+
+      if (target && target instanceof HTMLElement) {
+        // Morph to element shape
+        const rect = target.getBoundingClientRect();
+        const computedStyle = getComputedStyle(target);
+        const borderRadius = parseInt(computedStyle.borderRadius) || 12;
+        const padding = 6; // extra breathing room
+
+        mouseX.set(rect.left + rect.width / 2);
+        mouseY.set(rect.top + rect.height / 2);
+        width.set(rect.width + padding * 2);
+        height.set(rect.height + padding * 2);
+        radius.set(borderRadius + padding);
+        opacity.set(1);
+        currentTarget.current = target;
+      } else {
+        // Free-floating blob
+        mouseX.set(e.clientX);
+        mouseY.set(e.clientY);
+        width.set(40);
+        height.set(40);
+        radius.set(9999);
+        opacity.set(0.7);
+        currentTarget.current = null;
       }
     }
 
     function handleMouseLeave() {
-      if (containerRef.current) {
-        containerRef.current.style.opacity = "0";
-        visible.current = false;
+      opacity.set(0);
+      currentTarget.current = null;
+    }
+
+    function handleScroll() {
+      // When scrolling while hovering a target, re-calc position
+      if (currentTarget.current && currentTarget.current instanceof HTMLElement) {
+        const rect = currentTarget.current.getBoundingClientRect();
+        const padding = 6;
+        mouseX.set(rect.left + rect.width / 2);
+        mouseY.set(rect.top + rect.height / 2);
+        width.set(rect.width + padding * 2);
+        height.set(rect.height + padding * 2);
       }
     }
 
     window.addEventListener("mousemove", handleMouseMove);
     document.documentElement.addEventListener("mouseleave", handleMouseLeave);
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       document.documentElement.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("scroll", handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [mouseX, mouseY]);
+  }, [mouseX, mouseY, width, height, radius, opacity, getMorphTarget]);
 
   return (
     <motion.div
-      ref={containerRef}
+      ref={blobRef}
       style={{
         position: "fixed",
         top: 0,
         left: 0,
-        zIndex: 9999,
+        zIndex: 9998,
         pointerEvents: "none",
-        opacity: 0,
         x: springX,
         y: springY,
+        width: springW,
+        height: springH,
+        borderRadius: springRadius,
+        opacity: springOpacity,
         translateX: "-50%",
         translateY: "-50%",
+        background: "rgb(var(--color-primary) / 0.08)",
+        border: "1.5px solid rgb(var(--color-primary) / 0.15)",
+        backdropFilter: "blur(1px)",
+        willChange: "transform, width, height, border-radius, opacity",
+        transition: "background 0.3s ease, border-color 0.3s ease",
       }}
-    >
-      {/* Outer soft glow */}
-      <div
-        style={{
-          width: "300px",
-          height: "300px",
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgb(var(--color-primary) / 0.1) 0%, transparent 70%)",
-        }}
-      />
-      {/* Inner bright spot */}
-      <div
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "80px",
-          height: "80px",
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgb(var(--color-primary) / 0.2) 0%, transparent 70%)",
-        }}
-      />
-    </motion.div>
+    />
   );
 }

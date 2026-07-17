@@ -135,6 +135,7 @@ export function ApplicationList({ applications }: ApplicationListProps) {
                 transition={{ type: "spring", stiffness: 400, damping: 30, delay: i * 0.03 }}
                 whileHover={{ y: -2 }}
                 className="p-4 sm:p-5 rounded-[var(--radius-xl)] border transition-shadow duration-300 hover:shadow-md"
+                data-cursor-morph
                 style={{
                   background: "rgb(var(--color-surface-container))",
                   borderColor: "rgb(var(--color-outline-variant))",
