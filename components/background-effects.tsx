@@ -5,12 +5,14 @@ import { motion, useMotionValue, useSpring } from "motion/react";
 
 /**
  * Floating gradient orbs that animate continuously in the background.
- * GPU-safe: only animates transform and opacity.
  */
 export function BackgroundOrbs() {
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-      {/* Orb 1 - Large, slow drift */}
+    <div
+      className="fixed inset-0 overflow-hidden pointer-events-none"
+      style={{ zIndex: -1 }}
+    >
+      {/* Orb 1 - Large, slow drift top-left */}
       <motion.div
         animate={{
           x: [0, 80, -60, 40, 0],
@@ -18,11 +20,19 @@ export function BackgroundOrbs() {
           scale: [1, 1.1, 0.95, 1.05, 1],
         }}
         transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full opacity-[0.12]"
-        style={{ background: "radial-gradient(circle, rgb(var(--color-primary)), transparent 70%)" }}
+        className="absolute rounded-full"
+        style={{
+          top: "-100px",
+          left: "-100px",
+          width: "500px",
+          height: "500px",
+          opacity: 0.15,
+          background: "radial-gradient(circle, rgb(var(--color-primary)), transparent 70%)",
+          willChange: "transform",
+        }}
       />
 
-      {/* Orb 2 - Medium, faster */}
+      {/* Orb 2 - Medium, right side */}
       <motion.div
         animate={{
           x: [0, -50, 70, -30, 0],
@@ -30,11 +40,19 @@ export function BackgroundOrbs() {
           scale: [1, 0.9, 1.15, 0.95, 1],
         }}
         transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 3 }}
-        className="absolute top-1/3 -right-24 w-[400px] h-[400px] rounded-full opacity-[0.08]"
-        style={{ background: "radial-gradient(circle, rgb(var(--color-tertiary)), transparent 70%)" }}
+        className="absolute rounded-full"
+        style={{
+          top: "30%",
+          right: "-80px",
+          width: "400px",
+          height: "400px",
+          opacity: 0.1,
+          background: "radial-gradient(circle, rgb(var(--color-tertiary)), transparent 70%)",
+          willChange: "transform",
+        }}
       />
 
-      {/* Orb 3 - Small, snappy */}
+      {/* Orb 3 - Bottom left */}
       <motion.div
         animate={{
           x: [0, 40, -30, 60, 0],
@@ -42,11 +60,19 @@ export function BackgroundOrbs() {
           scale: [1, 1.2, 0.85, 1.1, 1],
         }}
         transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 7 }}
-        className="absolute bottom-16 left-1/4 w-[300px] h-[300px] rounded-full opacity-[0.1]"
-        style={{ background: "radial-gradient(circle, rgb(var(--color-secondary)), transparent 70%)" }}
+        className="absolute rounded-full"
+        style={{
+          bottom: "10%",
+          left: "20%",
+          width: "350px",
+          height: "350px",
+          opacity: 0.12,
+          background: "radial-gradient(circle, rgb(var(--color-secondary)), transparent 70%)",
+          willChange: "transform",
+        }}
       />
 
-      {/* Orb 4 - Accent glow, drifts center */}
+      {/* Orb 4 - Center large ambient */}
       <motion.div
         animate={{
           x: [0, -70, 50, -40, 0],
@@ -54,15 +80,15 @@ export function BackgroundOrbs() {
           scale: [1, 1.05, 0.9, 1.1, 1],
         }}
         transition={{ duration: 30, repeat: Infinity, ease: "easeInOut", delay: 10 }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-[0.05]"
-        style={{ background: "radial-gradient(circle, rgb(var(--color-primary)), transparent 60%)" }}
-      />
-
-      {/* Subtle noise/grain overlay */}
-      <div
-        className="absolute inset-0 opacity-[0.015]"
+        className="absolute rounded-full"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+          top: "40%",
+          left: "40%",
+          width: "600px",
+          height: "600px",
+          opacity: 0.06,
+          background: "radial-gradient(circle, rgb(var(--color-primary)), transparent 60%)",
+          willChange: "transform",
         }}
       />
     </div>
@@ -71,69 +97,85 @@ export function BackgroundOrbs() {
 
 /**
  * A soft glowing circle that follows the cursor with spring physics.
- * Uses useMotionValue to avoid re-renders — GPU only.
  */
 export function CursorGlow() {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
+  const mouseX = useMotionValue(-200);
+  const mouseY = useMotionValue(-200);
 
-  const springX = useSpring(mouseX, { stiffness: 150, damping: 20, mass: 0.5 });
-  const springY = useSpring(mouseY, { stiffness: 150, damping: 20, mass: 0.5 });
+  const springX = useSpring(mouseX, { stiffness: 120, damping: 18, mass: 0.5 });
+  const springY = useSpring(mouseY, { stiffness: 120, damping: 18, mass: 0.5 });
 
+  const visible = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Only show on devices with fine pointer (not touch)
     const hasFinePointer = window.matchMedia("(pointer: fine)").matches;
-    if (!hasFinePointer) return;
+    if (!hasFinePointer) {
+      if (containerRef.current) containerRef.current.style.display = "none";
+      return;
+    }
 
     function handleMouseMove(e: MouseEvent) {
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
-      if (containerRef.current) {
+      if (!visible.current && containerRef.current) {
         containerRef.current.style.opacity = "1";
+        visible.current = true;
       }
     }
 
     function handleMouseLeave() {
       if (containerRef.current) {
         containerRef.current.style.opacity = "0";
+        visible.current = false;
       }
     }
 
     window.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseleave", handleMouseLeave);
+    document.documentElement.addEventListener("mouseleave", handleMouseLeave);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseleave", handleMouseLeave);
+      document.documentElement.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, [mouseX, mouseY]);
 
   return (
     <motion.div
       ref={containerRef}
-      className="fixed top-0 left-0 -z-5 pointer-events-none opacity-0"
       style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        zIndex: 9999,
+        pointerEvents: "none",
+        opacity: 0,
         x: springX,
         y: springY,
         translateX: "-50%",
         translateY: "-50%",
-        transition: "opacity 0.3s ease",
       }}
     >
       {/* Outer soft glow */}
       <div
-        className="w-[350px] h-[350px] rounded-full"
         style={{
-          background: "radial-gradient(circle, rgb(var(--color-primary) / 0.08) 0%, transparent 70%)",
+          width: "300px",
+          height: "300px",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgb(var(--color-primary) / 0.1) 0%, transparent 70%)",
         }}
       />
       {/* Inner bright spot */}
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120px] h-[120px] rounded-full"
         style={{
-          background: "radial-gradient(circle, rgb(var(--color-primary) / 0.12) 0%, transparent 70%)",
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "80px",
+          height: "80px",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgb(var(--color-primary) / 0.2) 0%, transparent 70%)",
         }}
       />
     </motion.div>

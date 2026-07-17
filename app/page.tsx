@@ -6,7 +6,7 @@ import { Briefcase, ArrowRight, ShieldCheck, FunnelSimple, Lightning } from "@ph
 
 export default function Home() {
   return (
-    <div className="min-h-[100dvh] flex flex-col" style={{ background: "rgb(var(--color-surface))" }}>
+    <div className="min-h-[100dvh] flex flex-col relative">
       {/* Nav */}
       <motion.header
         initial={{ y: -20, opacity: 0 }}

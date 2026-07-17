@@ -37,7 +37,7 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center px-6" style={{ background: "rgb(var(--color-surface))" }}>
+      <div className="min-h-[100dvh] flex items-center justify-center px-6">
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="w-full max-w-sm text-center p-8 rounded-[var(--radius-xl)] border" style={{ background: "rgb(var(--color-surface-container))", borderColor: "rgb(var(--color-outline-variant))" }}>
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 20, delay: 0.2 }}>
             <CheckCircle size={56} weight="duotone" className="mx-auto mb-4" style={{ color: "rgb(var(--color-success))" }} />
@@ -53,7 +53,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center px-6" style={{ background: "rgb(var(--color-surface))" }}>
+    <div className="min-h-[100dvh] flex items-center justify-center px-6">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="w-full max-w-sm">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">

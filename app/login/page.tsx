@@ -83,7 +83,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center px-6" style={{ background: "rgb(var(--color-surface))" }}>
+    <div className="min-h-[100dvh] flex items-center justify-center px-6">
       <Suspense>
         <LoginForm />
       </Suspense>
