@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/lib/theme";
 import { AuthListener } from "@/components/auth-listener";
+import { BackgroundOrbs, CursorGlow } from "@/components/background-effects";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -51,6 +52,8 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen font-[family-name:var(--font-geist-sans)] antialiased">
         <ThemeProvider>
+          <BackgroundOrbs />
+          <CursorGlow />
           <AuthListener />
           {children}
         </ThemeProvider>
