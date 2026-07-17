@@ -106,10 +106,16 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html {
+  background-color: rgb(var(--color-surface));
+  color: rgb(var(--color-on-surface));
+  transition: background-color 0.4s ease, color 0.3s ease;
+}
+
 body {
   background-color: rgb(var(--color-surface));
   color: rgb(var(--color-on-surface));
-  transition: background-color 0.3s var(--transition-smooth), color 0.3s var(--transition-smooth);
+  transition: background-color 0.4s ease, color 0.3s ease;
 }
 
 /* Smooth scrollbar */

@@ -43,7 +43,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   function toggleTheme() { setThemeState((prev) => (prev === "light" ? "dark" : "light")); }
 
   if (!mounted) {
-    return <div style={{ visibility: "hidden" }}>{children}</div>;
+    return <>{children}</>;
   }
 
   return (
